@@ -1,11 +1,13 @@
 cmake_minimum_required(VERSION 3.28)
 
 project(Statsig
-    VERSION 0.10.2
+    VERSION 0.10.3
     DESCRIPTION "Statsig C++ Core SDK"
     LANGUAGES CXX
 )
+set(PROJECT_VERSION_SUFFIX "-rc.2510210014")
 
+set(STATSIG_CPP_VERSION "${PROJECT_VERSION}${PROJECT_VERSION_SUFFIX}")
 # Wrap the prebuilt dylib as an imported library
 file(GLOB STATSIG_SOURCE_FILES "src/*")
 add_library(Statsig ${STATSIG_SOURCE_FILES})
@@ -47,7 +49,7 @@ else()
    
     # generate_target_name(${PROJECT_VERSION} ASSET_NAME SUFFIX) TODO(xinli)
     set(ASSET_NAME "statsig-ffi-0.10.2-aarch64-apple-darwin.zip")
-    set(ASSET_URL "https://github.com/${GITHUB_OWNER}/${GITHUB_REPO}/releases/download/${PROJECT_VERSION}/${ASSET_NAME}")
+    set(ASSET_URL "https://github.com/${GITHUB_OWNER}/${GITHUB_REPO}/releases/download/${STATSIG_CPP_VERSION}/${ASSET_NAME}")
     set(ASSET_PATH "${ASSET_NAME}")
     set(SUFFIX "dylib") #
     message(STATUS "Downloading asset from: ${ASSET_URL}")
