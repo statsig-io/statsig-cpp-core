@@ -41,17 +41,63 @@ if(USE_LOCAL_BUILD_FILE)
     message(STATUS "Using local build file from: ${FFI_BINARY_PATH}")
     target_link_libraries(Statsig PRIVATE ${FFI_BINARY_PATH})
 else()
-    set(GITHUB_OWNER "statsig-io")
-    #TODO(xinli) We probably want to publish to statsig-cpp-core repo so we can publish non-prod version 
-    set(GITHUB_REPO "statsig-server-core") 
+    #--------------------- Built Binary Resolution Helper ---------------------#
+    function(generate_target_name version target_var suffix_var)
+        # Detect OS
+        set(os_name "${CMAKE_SYSTEM_NAME}")
+        if(os_name STREQUAL "Darwin")
+            set(os_target "apple-darwin")
+            set(library_suffix "dylib")
+        elseif(os_name STREQUAL "Linux")
+            set()
+            execute_process(
+                COMMAND ldd --version
+                RESULT_VARIABLE _ldd_result
+                OUTPUT_VARIABLE _ldd_output
+                ERROR_VARIABLE _ldd_error
+                OUTPUT_STRIP_TRAILING_WHITESPACE
+                ERROR_STRIP_TRAILING_WHITESPACE
+            )
+            if(_ldd_result EQUAL 0)
+                if(_ldd_output MATCHES "musl")
+                    set(os_target "linux-musl")
+                    set(library_suffix "so")
+
+                else()
+                    set(os_target "linux-gnu")
+                    set(library_suffix "so")
+                endif()
+            endif()
+        else()
+            message(FATAL_ERROR "Unsupported OS: ${os_name}, Contact Statsig support to add support for it")
+        endif()
+
+        # Detect CPU Architecture
+        set(cpu_arch "${CMAKE_SYSTEM_PROCESSOR}")
+        if(cpu_arch MATCHES "x86_64|AMD64")
+            set(cpu_target "x86_64")
+        elseif(cpu_arch MATCHES "aarch64|arm64")
+            set(cpu_target "aarch64")
+        else()
+            message(FATAL_ERROR "Unsupported CPU architecture: ${cpu_arch}, Contact Statsig support to add support for it")
+        endif()    
+
+        # Compose target name
+        set(target_name "statsig-ffi-${version}-${cpu_target}-${os_target}.zip")
+
+        # Return value to caller
+        set(${target_var} "${target_name}" PARENT_SCOPE)
+        set(${suffix_var} "${library_suffix}" PARENT_SCOPE)
+    endfunction()
+    #--------------------- End of Helper ---------------------#
 
     # Adjust asset name according to your OS/arch
-   
-    # generate_target_name(${PROJECT_VERSION} ASSET_NAME SUFFIX) TODO(xinli)
-    set(ASSET_NAME "statsig-ffi-0.10.2-aarch64-apple-darwin.zip")
+    generate_target_name(${STATSIG_CPP_VERSION} ASSET_NAME SUFFIX)
+    set(GITHUB_OWNER "statsig-io")
+    set(GITHUB_REPO "statsig-cpp-core") 
     set(ASSET_URL "https://github.com/${GITHUB_OWNER}/${GITHUB_REPO}/releases/download/${STATSIG_CPP_VERSION}/${ASSET_NAME}")
     set(ASSET_PATH "${ASSET_NAME}")
-    set(SUFFIX "dylib") #
+
     message(STATUS "Downloading asset from: ${ASSET_URL}")
     file(DOWNLOAD
         "${ASSET_URL}"
@@ -70,52 +116,3 @@ if(ENABLE_STATSIG_CPP_UNIT_TEST)
     enable_testing()
     add_subdirectory(tests)
 endif()
-
-#--------------------- Built Binary Resolution Helper ---------------------#
-function(generate_target_name version target_var suffix_var)
-    # Detect OS
-    set(os_name "${CMAKE_SYSTEM_NAME}")
-    if(os_name STREQUAL "Darwin")
-        set(os_target "apple-darwin")
-        set(library_suffix "dylib")
-    elseif(os_name STREQUAL "Linux")
-        set()
-        execute_process(
-            COMMAND ldd --version
-            RESULT_VARIABLE _ldd_result
-            OUTPUT_VARIABLE _ldd_output
-            ERROR_VARIABLE _ldd_error
-            OUTPUT_STRIP_TRAILING_WHITESPACE
-            ERROR_STRIP_TRAILING_WHITESPACE
-        )
-        if(_ldd_result EQUAL 0)
-            if(_ldd_output MATCHES "musl")
-                set(os_target "linux-musl")
-                set(library_suffix "so")
-
-            else()
-                set(os_target "linux-gnu")
-                set(library_suffix "so")
-            endif()
-        endif()
-    else()
-        message(FATAL_ERROR "Unsupported OS: ${os_name}, Contact Statsig support to add support for it")
-    endif()
-
-    # Detect CPU Architecture
-    set(cpu_arch "${CMAKE_SYSTEM_PROCESSOR}")
-    if(cpu_arch MATCHES "x86_64|AMD64")
-        set(cpu_target "x86_64")
-    elseif(cpu_arch MATCHES "aarch64|arm64")
-        set(cpu_target "aarch64")
-    else()
-        message(FATAL_ERROR "Unsupported CPU architecture: ${cpu_arch}, Contact Statsig support to add support for it")
-    endif()    
-
-    # Compose target name
-    set(target_name "statsig-ffi-${version}-${cpu_target}-${os_target}.zip")
-
-    # Return value to caller
-    set(${target_var} "${target_name}" PARENT_SCOPE)
-    set(${suffix_var} "${library_suffix}" PARENT_SCOPE)
-endfunction()
