@@ -24,7 +24,8 @@ const char *__internal__test_data_store(uint64_t data_store_ref,
 
 void free_string(char *s);
 
-uint64_t function_based_event_logging_adapter_create(void (*start_fn)(void),
+uint64_t function_based_event_logging_adapter_create(const char *bindings_language,
+                                                     void (*start_fn)(void),
                                                      SafeOptBool (*log_events_fn)(const char *request_json),
                                                      void (*shutdown_fn)(void));
 
@@ -194,11 +195,6 @@ char *statsig_get_layer(uint64_t statsig_ref,
                         uint64_t user_ref,
                         const char *layer_name,
                         const char *options_json);
-
-char *statsig_get_prompt(uint64_t statsig_ref,
-                         uint64_t user_ref,
-                         const char *prompt_name,
-                         const char *options_json);
 
 void statsig_log_layer_param_exposure(uint64_t statsig_ref,
                                       const char *layer_json,
