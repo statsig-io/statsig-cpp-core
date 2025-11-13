@@ -1,11 +1,11 @@
 cmake_minimum_required(VERSION 3.28)
 
 project(Statsig
-    VERSION 0.10.3
+    VERSION 0.12.1
     DESCRIPTION "Statsig C++ Core SDK"
     LANGUAGES CXX
 )
-set(PROJECT_VERSION_SUFFIX "-rc.2510210014")
+set(PROJECT_VERSION_SUFFIX "-beta.2511130238")
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -126,6 +126,11 @@ else()
         WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
     )
     target_link_libraries(Statsig PRIVATE "${CMAKE_BINARY_DIR}/libstatsig_ffi.${SUFFIX_VAR}")
+
+    set_target_properties(Statsig PROPERTIES
+        BUILD_RPATH "@loader_path"
+        INSTALL_RPATH "@loader_path"
+    )
 endif()
 
 
