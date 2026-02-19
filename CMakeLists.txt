@@ -10,7 +10,7 @@ set(PROJECT_VERSION_SUFFIX "beta.2602190307")
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-set(STATSIG_CPP_VERSION "${PROJECT_VERSION}${PROJECT_VERSION_SUFFIX}")
+set(STATSIG_CPP_VERSION "${PROJECT_VERSION}-${PROJECT_VERSION_SUFFIX}")
 # Wrap the prebuilt dylib as an imported library
 file(GLOB STATSIG_SOURCE_FILES "src/*")
 add_library(Statsig ${STATSIG_SOURCE_FILES})
@@ -21,14 +21,17 @@ target_include_directories(Statsig PRIVATE
 )
 
 # External Dependency
-include(FetchContent)
-FetchContent_Declare(
-    json
-    GIT_REPOSITORY https://github.com/nlohmann/json.git
-    GIT_TAG v3.12.0  
-)
+find_package(nlohmann_json QUIET)
+if(NOT nlohmann_json_FOUND)
+    include(FetchContent)
+    FetchContent_Declare(
+        json
+        GIT_REPOSITORY https://github.com/nlohmann/json.git
+        GIT_TAG v3.12.0
+    )
 
-FetchContent_MakeAvailable(json)
+    FetchContent_MakeAvailable(json)
+endif()
 target_link_libraries(Statsig PUBLIC nlohmann_json::nlohmann_json)
 
 # Check if we should use local build file
@@ -75,9 +78,9 @@ function (detect_os_target os_target_var library_suffix_var)
         set(${library_suffix_var} "so" PARENT_SCOPE)
         detect_is_musl(_is_musl)
         if(_is_musl)
-            set(${os_target_var} "linux-musl" PARENT_SCOPE)
+            set(${os_target_var} "unknown-linux-musl" PARENT_SCOPE)
         else()
-            set(${os_target_var} "linux-gnu" PARENT_SCOPE)
+            set(${os_target_var} "unknown-linux-gnu" PARENT_SCOPE)
         endif()
     else()
         message(FATAL_ERROR "Unsupported OS: ${os_name}, Contact Statsig support to add support for it")
