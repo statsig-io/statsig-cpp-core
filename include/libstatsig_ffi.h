@@ -402,8 +402,7 @@ uint64_t statsig_options_create(const char *specs_url,
                                 const char *proxy_auth,
                                 const char *proxy_protocol,
                                 uint64_t persistent_storage_ref,
-                                int id_lists_request_timeout_ms,
-                                int exposure_dedupe_max_keys);
+                                int id_lists_request_timeout_ms);
 
 void statsig_options_release(uint64_t options_ref);
 

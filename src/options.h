@@ -24,7 +24,6 @@ public:
   bool disable_all_logging = false;
   bool disable_country_lookup = false;
   bool disable_network = false;
-  std::optional<uint32_t> exposure_dedupe_max_keys;
   StatsigOptionsBuilder() = default;
   StatsigOptions build();
 };
@@ -39,8 +38,7 @@ inline void to_json(json &j, const StatsigOptionsBuilder &b) {
            {"enable_dcs_deltas", b.enable_dcs_deltas},
            {"disable_all_logging", b.disable_all_logging},
            {"disable_country_lookup", b.disable_country_lookup},
-           {"disable_network", b.disable_network},
-           {"exposure_dedupe_max_keys", b.exposure_dedupe_max_keys}};
+           {"disable_network", b.disable_network}};
 }
 
 struct CheckGateOptions {
